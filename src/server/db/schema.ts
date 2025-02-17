@@ -6,6 +6,8 @@ import {
   index,
   integer,
   pgTableCreator,
+  serial,
+  text,
   timestamp,
   varchar,
 } from "drizzle-orm/pg-core";
@@ -18,19 +20,45 @@ import {
  */
 export const createTable = pgTableCreator((name) => `portfolio-site_${name}`);
 
-export const posts = createTable(
-  "post",
-  {
-    id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
-    name: varchar("name", { length: 256 }),
-    createdAt: timestamp("created_at", { withTimezone: true })
-      .default(sql`CURRENT_TIMESTAMP`)
-      .notNull(),
-    updatedAt: timestamp("updated_at", { withTimezone: true }).$onUpdate(
-      () => new Date()
-    ),
-  },
-  (example) => ({
-    nameIndex: index("name_idx").on(example.name),
-  })
-);
+export const users = createTable("users", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 256 }),
+  email: varchar("email", { length: 256 }),
+  password: varchar("password", { length: 256 }),
+});
+
+export const projects = createTable("projects", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 256 }),
+  description: text("description"),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).$onUpdate(
+    () => new Date()
+  ),
+});
+
+export const projectImages = createTable("project_images", {
+  id: serial("id").primaryKey(),
+  projectId: integer("project_id").references(() => projects.id),
+  imageUrl: varchar("image_url", { length: 256 }),
+});
+
+export const blogPosts = createTable("blog_posts", {
+  id: serial("id").primaryKey(),
+  title: varchar("title", { length: 256 }),
+  content: text("content"),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).$onUpdate(
+    () => new Date()
+  ),
+});
+
+export const blogPostImages = createTable("blog_post_images", {
+  id: serial("id").primaryKey(),
+  blogPostId: integer("blog_post_id").references(() => blogPosts.id),
+  imageUrl: varchar("image_url", { length: 256 }),
+});
